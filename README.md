@@ -364,8 +364,93 @@ Com essas etapas, você configurou um sistema de autenticação robusto para o u
 Essa configuração pode ser adaptada e aprimorada conforme suas necessidades específicas, mas serve como uma base sólida para garantir a segurança no uso do WSL.
 
 ---
+### Extra: Harbour Version
 
-## Referência:
+Para instalar e usar o Harbour a partir do repositório GitHub e compilar seus scripts usando `hbmk2`, siga estes passos:
+
+### Instalação do Harbour
+
+1. **Clonar o Repositório**:
+
+```sh
+git clone https://github.com/harbour/core.git
+cd core
+```
+
+2. **Instalar Dependências**:
+
+```sh
+sudo apt-get update
+sudo apt-get install build-essential git libssl-dev libpcre3-dev libncurses5-dev libcurl4-openssl-dev
+```
+
+3. **Compilar e Instalar o Harbour**:
+
+```sh
+make
+sudo make install
+```
+
+4. **Dependência Opcional**:
+
+Se encontrar problemas relacionados ao `libpcre3`, instale:
+
+```sh
+sudo apt-get install libpcre3
+```
+
+### Verificação
+
+Verifique se o Harbour foi instalado corretamente:
+
+```sh
+hbmk2 -version
+```
+
+### Compilar e Executar Seus Scripts
+
+1. **Salvar os Scripts**: Salve `login.prg` e `get2FAkey.prg` nos arquivos correspondentes.
+
+2. **Compilar os Scripts**:
+
+```sh
+hbmk2 login.prg -o login
+hbmk2 get2FAkey.prg -o get2FAkey
+```
+
+3. **Executar os Scripts**:
+
+```sh
+sudo ./login
+sudo ./get2FAkey
+```
+
+### Dependências Adicionais
+
+Certifique-se de ter o OpenSSL, Python e o OATH Toolkit instalados:
+
+```sh
+sudo apt-get install openssl python3 oathtool
+```
+
+### Resumo dos Scripts
+
+1. **login.prg**:
+   - Valida a senha do root.
+   - Verifica o código 2FA.
+
+2. **get2FAkey.prg**:
+   - Gera uma chave secreta para 2FA.
+   - Armazena a chave em um arquivo protegido.
+
+Seguindo estas etapas, você conseguirá configurar o Harbour a partir do código-fonte, compilar e executar seus scripts utilizando `hbmk2`.
+
+---
+
+## Referência(s):
+
 [BlackTDN :: Como Forçar a Solicitação da Senha ao Acessar o WSL como Root](https://www.blacktdn.com.br/2024/06/blacktdn-como-forcar-solicitacao-da.html)
+
+[Harbour](https://github.com/harbour/core)
 
 ---
