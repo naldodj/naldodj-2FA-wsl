@@ -337,7 +337,9 @@ end
 ### Passo 6: Garanta que os scripts não possam ser acessados via \\wsl.localhost\ no windows
 
 1. **Defina o usuário padrao
-sudo editor /etc/wsl.conf 
+```bash
+sudo editor /etc/wsl.conf
+```
 ```bash
 [user]
 default=<NonRootUser>
