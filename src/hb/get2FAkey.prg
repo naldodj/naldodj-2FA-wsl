@@ -8,14 +8,14 @@ function Main()
     hb_cdpSelect("UTF8EX")
 
     if (hb_FileExists(cSecretKeyFile))
-        ? "A chave secreta já existe em ", cSecretKeyFile
+        ? "A chave secreta já existe em ",cSecretKeyFile
     else
         cSecretKey:=Generate2FAKey()
-        if ((!Empty(cSecretKey)).and.(hb_MemoWrit(cSecretKeyFile, cSecretKey)).and.(hb_FileExists(cSecretKeyFile)))
+        if ((!Empty(cSecretKey)).and.(hb_MemoWrit(cSecretKeyFile,cSecretKey)).and.(hb_FileExists(cSecretKeyFile)))
             hb_Run("chmod +600 "+cSecretKeyFile)
-            ? "Chave secreta gerada e armazenada em ", cSecretKeyFile
+            ? "Chave secreta gerada e armazenada em ",cSecretKeyFile
         else
-            ? "Problema na geração do arquivo ", cSecretKeyFile
+            ? "Problema na geração do arquivo ",cSecretKeyFile
         endif
     endif
 

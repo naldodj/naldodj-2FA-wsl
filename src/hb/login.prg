@@ -36,15 +36,15 @@ function Main()
 static function chkRootPWD()
 
     local cCmd as character
-    local cResult  as character
-    local cPassWord  as character
+    local cResult as character
+    local cPassWord as character
     local cTmpPassWordFile as character:="/root/hb_tmp_chkRootPWD"
     local lChkRootPWD as logical
 
     cPassWord:=GetHiddenPassword()
 
-    #pragma __cstream |cCmd:=%s
-        perl -e 'use strict; use warnings; my @pwent =getpwnam("root"); if (!@pwent) {die "Invalid username: root\\n";} if (crypt("$ARGV[0]",$pwent[1]) eq $pwent[1]) {exit(0);} else {print STDERR "Invalid password for root\\n"; exit(1);}\' "cPassWord" > cTmpPassWordFile 2>&1
+    #pragma __cstream|cCmd:=%s
+        perl -e 'use strict; use warnings; my @pwent=getpwnam("root"); if (!@pwent) {die "Invalid username: root\\n";} if (crypt("$ARGV[0]",$pwent[1]) eq $pwent[1]) {exit(0);} else {print STDERR "Invalid password for root\\n"; exit(1);}\' "cPassWord" > cTmpPassWordFile 2>&1
     #pragma __endtext
     cCmd:=strTran(cCmd,"cPassWord",cPassWord)
     cCmd:=strTran(cCmd,"cTmpPassWordFile",cTmpPassWordFile)
@@ -100,20 +100,17 @@ static function chkRoot2FA(cSecretKeyFile as character)
 
 static function GetHiddenPassword()
 
-   local aGetList as array:={}
-
+   local aGetList as array:=Array(0)
    local bKeyPaste as codeblock
-
    local cPassword as character:=Space(128)
-
    local nSavedRow as numeric
 
    QQOut(hb_eol())
-   QQOut(hb_UTF8ToStr(hb_i18n_gettext("Enter password:" /*,_SELF_NAME_ */)) + " ")
+   QQOut(hb_UTF8ToStr(hb_i18n_gettext("Enter password:"/*,_SELF_NAME_*/))+" ")
 
    nSavedRow:=Row()
 
-   aAdd(aGetList,hb_Get():New(Row(),Col(),{|v |if(PCount() ==0,cPassword,cPassword:=v)},"cPassword","@S" + hb_ntos(MaxCol() - Col() + 1),hb_ColorIndex(SetColor(),CLR_STANDARD) + "," + hb_ColorIndex(SetColor(),CLR_STANDARD)))
+   aAdd(aGetList,hb_Get():New(Row(),Col(),{|v|if(PCount()==0,cPassword,cPassword:=v)},"cPassword","@S"+hb_ntos(MaxCol()-Col()+1),hb_ColorIndex(SetColor(),CLR_STANDARD)+","+hb_ColorIndex(SetColor(),CLR_STANDARD)))
    aTail(aGetList):hideInput(.T.)
    aTail(aGetList):postBlock:={||!Empty(cPassword)}
    aTail(aGetList):display()
