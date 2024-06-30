@@ -344,15 +344,17 @@ sudo editor /etc/wsl.conf
 [user]
 default=<NonRootUser>
 ```
-
 2. **Alterar o dono do arquivo para o usuário root:
 ```bash
 sudo chown root:root /etc/wsl.conf
 ```
-
 3. **Alterar as permissões do arquivo para que apenas o dono (root) tenha acesso:
 ```bash
 sudo chmod 600 /etc/wsl.conf
+```
+4. **Através do Powershell, Reincie a distro :
+```bash
+wsl --shutdown
 ```
 
 ### Conclusão
