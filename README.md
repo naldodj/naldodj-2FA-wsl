@@ -334,6 +334,25 @@ end
     wsl --user root
     ```
 
+### Passo 6: Garanta que os scripts não possam ser acessados via \\wsl.localhost\ no windows
+
+1. **Defina o usuário padrao
+sudo editor /etc/wsl.conf 
+```bash
+[user]
+default=<NonRootUser>
+```
+
+2. **Alterar o dono do arquivo para o usuário root:
+```bash
+sudo chown root:root /etc/wsl.conf
+```
+
+3. **Alterar as permissões do arquivo para que apenas o dono (root) tenha acesso:
+```bash
+sudo chmod 600 /etc/wsl.conf
+```
+
 ### Conclusão
 
 Com essas etapas, você configurou um sistema de autenticação robusto para o usuário root no WSL, utilizando uma senha e autenticação de dois fatores (2FA). Isso adiciona uma camada extra de segurança, protegendo contra acessos não autorizados. Lembre-se de armazenar a chave secreta em um local seguro e ajustar as permissões dos arquivos conforme necessário.
