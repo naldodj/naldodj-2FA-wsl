@@ -334,7 +334,7 @@ end
     wsl --user root
     ```
 
-### Passo 6: Garanta que os scripts não possam ser acessados via \\wsl.localhost\ no windows
+### Passo 5: Garanta que os scripts não possam ser acessados via \\wsl.localhost\ no windows
 
 1. **Defina o usuário padrao
 ```bash
