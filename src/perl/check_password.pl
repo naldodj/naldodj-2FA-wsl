@@ -1,3 +1,5 @@
+#How to check password with Linux?
+#https://unix.stackexchange.com/questions/21705/how-to-check-password-with-linux
 use strict;
 use warnings;
 my @pwent = getpwnam('root');
