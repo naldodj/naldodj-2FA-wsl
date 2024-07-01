@@ -4,7 +4,7 @@ function Main()
 
     local cSecretKey as character
     local cSecretKeyPath as character:="/root/2FA/"
-    local cSecretKeyFile as character:=hb_FNameMerge(cFilePath,"hb_2FAsecret_key",".txt")
+    local cSecretKeyFile as character:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
 
     hb_cdpSelect("UTF8EX")
 
