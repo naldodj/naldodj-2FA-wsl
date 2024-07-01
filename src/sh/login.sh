@@ -7,20 +7,8 @@ SECRET_KEY_FILE="/root/2FAsecret_key.txt"
 chkRootPWD() {
     # Solicita a senha de forma segura e armazena em uma variável
     read -s -p "Digite a senha do root: " senha
-
     # Executa a validação da senha usando Perl
-    perl -e '
-        use strict;
-        use warnings;
-        my @pwent = getpwnam("root");
-        if (!@pwent) {die "Invalid username: root\n";}
-        if (crypt($ARGV[0], $pwent[1]) eq $pwent[1]) {
-            exit(0);
-        } else {
-            print STDERR "Invalid password for root\n";
-            exit(1);
-        }
-    ' "$senha"
+    perl "../perl/check_password.pl" "$senha"
 }
 
 # Função para validar o código 2FA

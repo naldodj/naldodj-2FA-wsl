@@ -14,6 +14,9 @@ function Main()
     // Capturar SIGINT (Ctrl+C)
     SetKey(HB_K_CTRL_C,{||nil})
     SetKey(HB_K_ESC,{||nil})
+    
+    // Capturar SIGINT (Ctrl+Break)
+    Set( _SET_CANCEL, .F. )
 
     CLS
 
@@ -44,7 +47,7 @@ static function chkRootPWD()
     cPassWord:=GetHiddenPassword()
 
     #pragma __cstream|cCmd:=%s
-        perl -e 'use strict; use warnings; my @pwent=getpwnam("root"); if (!@pwent) {die "Invalid username: root\\n";} if (crypt("$ARGV[0]",$pwent[1]) eq $pwent[1]) {exit(0);} else {print STDERR "Invalid password for root\\n"; exit(1);}\' "cPassWord" > cTmpPassWordFile 2>&1
+        perl "../perl/check_password.pl" "cPassWord" > cTmpPassWordFile 2>&1
     #pragma __endtext
     cCmd:=strTran(cCmd,"cPassWord",cPassWord)
     cCmd:=strTran(cCmd,"cTmpPassWordFile",cTmpPassWordFile)
