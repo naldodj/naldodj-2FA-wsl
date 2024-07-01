@@ -1,74 +1,133 @@
+#include "color.ch"
+#include "inkey.ch"
+#include "setcurs.ch"
+#include "hbinkey.ch"
+
 REQUEST HB_CODEPAGE_UTF8EX
 
 function Main()
 
-    local cSecretKey as character
     local cSecretKeyPath as character:="/root/2FA/"
     local cSecretKeyFile as character:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
 
     hb_cdpSelect("UTF8EX")
 
-    if (!hb_DirExists(cSecretKeyPath))
-        hb_DirCreate(cSecretKeyPath)
-    endif
+    // Capturar SIGINT (Ctrl+C)
+    SetKey(HB_K_CTRL_C,{||nil})
+    SetKey(HB_K_ESC,{||nil})
 
-    if (hb_FileExists(cSecretKeyFile))
-        ? "A chave secreta já existe em ",cSecretKeyFile
-    else
-        cSecretKey:=Generate2FAKey()
-        if ((!Empty(cSecretKey)).and.(hb_MemoWrit(cSecretKeyFile,cSecretKey)).and.(hb_FileExists(cSecretKeyFile)))
-            hb_Run("chmod +600 "+cSecretKeyFile)
-            ? "Chave secreta gerada e armazenada em ",cSecretKeyFile
+    // Capturar SIGINT (Ctrl+Break)
+    Set( _SET_CANCEL, .F. )
+
+    CLS
+
+    while (.T.)
+        if (chkRootPWD())
+            ? "Senha correta."
+            if (chkRoot2FA(cSecretKeyFile))
+                ? "Autenticação 2FA correta. Bem-vindo ao terminal."
+                exit
+            else
+                ? "Código 2FA incorreto. Tente novamente."
+            endif
         else
-            ? "Problema na geração do arquivo ",cSecretKeyFile
+            ? "Senha incorreta. Tente novamente."
         endif
-    endif
+    end while
 
     return
 
-static function Generate2FAKey()
+static function chkRootPWD()
+
+    local cCmd as character
+    local cResult as character
+    local cPassWord as character
+    local cTmpPassWordFile as character:="/root/hb_tmp_chkRootPWD"
+    local lChkRootPWD as logical
+
+    cPassWord:=GetHiddenPassword()
+
+    #pragma __cstream|cCmd:=%s
+        perl "../perl/check_password.pl" "cPassWord" > cTmpPassWordFile 2>&1
+    #pragma __endtext
+    cCmd:=strTran(cCmd,"cPassWord",cPassWord)
+    cCmd:=strTran(cCmd,"cTmpPassWordFile",cTmpPassWordFile)
+
+    nResult:=hb_run(cCmd)
+    if (hb_FileExists(cTmpPassWordFile))
+        cResult:=hb_MemoRead(cTmpPassWordFile)
+        hb_FileDelete(cTmpPassWordFile)
+        cResult:=allTrim(strTran(cResult,hb_eol(),""))
+    endif
+
+    lChkRootPWD:=((nResult==0).and.(cResult==""))
+
+    return(lChkRootPWD) as logical
+
+static function chkRoot2FA(cSecretKeyFile as character)
 
     local cCmd as character
     local cSecretKey as character
-    local cTmpSecretKey as character
-    local cBase32Secret as character
+    local cCodigo2FA as character
+    local cTmpSecretKeyFile as character:="/root/hb_tmp_chkRoot2FA"
 
-    // Gerar 20 bytes aleatórios usando OpenSSL
-    cTmpSecretKey:="/root/hb_2FA_tmp_secret_key"
-    hb_run("openssl rand -base64 20 > "+cTmpSecretKey)
+    local nResult as numeric
 
-    // Verifica se o arquivo foi gerado com a chave
-    if (hb_FileExists(cTmpSecretKey))
+    local lChkRoot2FA as logical
 
-        cSecretKey:=hb_memoread(cTmpSecretKey)
-        hb_FileDelete(cTmpSecretKey)
-
-        cSecretKey:=strTran(cSecretKey,hb_eol(),"")
-
-        // Converter a chave secreta para Base32 usando Python
-        #pragma __cstream | cCmd:=%s
-            python3 -c \"import base64; print(base64.b32encode(base64.b64decode('cSecretKey')).decode('utf-8'))\" > cTmpSecretKey
-        #pragma __endtext
-
-        cCmd:=strTran(cCmd,"cSecretKey",cSecretKey)
-        cCmd:=strTran(cCmd,"cTmpSecretKey",cTmpSecretKey)
-
-        // Converter a chave secreta para Base32 usando Python
-        hb_run(cCmd)
-        if (hb_FileExists(cTmpSecretKey))
-            cBase32Secret:=hb_MemoRead(cTmpSecretKey)
-            hb_FileDelete(cTmpSecretKey)
-        else
-            cBase32Secret:=""
-        endif
-
+    if (hb_FileExists(cSecretKeyFile))
+        cSecretKey:=hb_MemoRead(cSecretKeyFile)
     else
+        CLS
+        cSecretKey:=Space(32)
+        @ 0,0 SAY "Digite a chave secreta para 2FA: " GET cSecretKey
+        READ
+    endif
+    cSecretKey:=allTrim(strTran(cSecretKey,hb_eol(),""))
 
-        cBase32Secret:=""
+    CLS
+    cCodigo2FA:=Space(6)
+    @ 0,0 SAY "Digite o código 2FA: " GET cCodigo2FA
+    READ
 
+    cCmd:="oathtool --totp -b "+cSecretKey+" > "+cTmpSecretKeyFile+" 2>&1"
+    nResult:=hb_run(cCmd)
+    if (hb_FileExists(cTmpSecretKeyFile))
+        cSecretKey:=hb_MemoRead(cTmpSecretKeyFile)
+        hb_FileDelete(cTmpSecretKeyFile)
+        cSecretKey:=strTran(cSecretKey,hb_eol(),"")
     endif
 
-    // Remover quebras de linha
-    cBase32Secret:=strTran(cBase32Secret,hb_eol(),"")
+    lChkRoot2FA:=((nResult==0).and.(cSecretKey==cCodigo2FA))
 
-    return(cBase32Secret) as character
+    return(lChkRoot2FA) as logical
+
+static function GetHiddenPassword()
+
+   local aGetList as array:=Array(0)
+   local bKeyPaste as codeblock
+   local cPassword as character:=Space(128)
+   local nSavedRow as numeric
+
+   QQOut(hb_eol())
+   QQOut(hb_UTF8ToStr(hb_i18n_gettext("Enter password:"/*,_SELF_NAME_*/))+" ")
+
+   nSavedRow:=Row()
+
+   aAdd(aGetList,hb_Get():New(Row(),Col(),{|v|if(PCount()==0,cPassword,cPassword:=v)},"cPassword","@S"+hb_ntos(MaxCol()-Col()+1),hb_ColorIndex(SetColor(),CLR_STANDARD)+","+hb_ColorIndex(SetColor(),CLR_STANDARD)))
+   aTail(aGetList):hideInput(.T.)
+   aTail(aGetList):postBlock:={||!Empty(cPassword)}
+   aTail(aGetList):display()
+
+   SetCursor(if(ReadInsert(),SC_INSERT,SC_NORMAL))
+   bKeyPaste:=SetKey(K_ALT_V,{||hb_gtInfo(HB_GTI_CLIPBOARDPASTE,.T.)})
+
+   ReadModal(aGetList)
+
+   /* Positions the cursor on the line previously saved */
+   SetPos(nSavedRow,MaxCol()-1)
+   SetKey(K_ALT_V,bKeyPaste)
+
+   QQOut(hb_eol())
+
+   return(AllTrim(cPassword)) as character
