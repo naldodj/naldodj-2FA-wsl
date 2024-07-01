@@ -191,7 +191,7 @@ sudo editor /etc/wsl.conf
 ```
 ```bash
 [user]
-default=<NonRootUser>
+default=[NonRootUser]
 ```
 2. **Alterar o dono do arquivo para o usuário root:
 ```bash
@@ -300,6 +300,9 @@ Seguindo estas etapas, você conseguirá configurar o Harbour a partir do códig
 
 [BlackTDN :: Como Forçar a Solicitação da Senha ao Acessar o WSL como Root](https://www.blacktdn.com.br/2024/06/blacktdn-como-forcar-solicitacao-da.html)
 
+## GitHub:
+
+[Autenticação 2FA para Usuário Root no WSL](https://github.com/naldodj/naldodj-2FA-wsl)
 [Harbour](https://github.com/harbour/core)
 
 ---
