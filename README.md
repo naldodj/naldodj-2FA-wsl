@@ -55,29 +55,29 @@ Ou: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/
 Execute o script para gerar e armazenar a chave secreta:
 
 ```bash
-chmod +x get2FAkey.sh
-./get2FAkey.sh
+chmod +x /root/scripts/sh/get2FAkey.sh
+/root/scripts/sh/get2FAkey.sh
 ```
 
 ou
 
 ```bash
-chmod +x get2FAkey.lua
-./get2FAkey.lua
+chmod +x /root/scripts/lua/get2FAkey.lua
+/root/scripts/lua/get2FAkey.lua
 ```
 
 ou
 
 ```bash
-chmod +x get2FAkey.lua
-pwsh ./get2FAkey.ps1
+chmod +x /root/scripts/ps/get2FAkey.lua
+pwsh /root/scripts/ps/get2FAkey.ps1
 ```
 
 ou, após compiar: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
 
 ```bash
-chmod +x get2FAkey
-./get2FAkey
+chmod +x /root/scripts/hb/get2FAkey
+/root/scripts/hb/get2FAkey
 ```
 
 ### Passo 3: Configurar o Script de Login
@@ -97,19 +97,19 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
 
 1. **Defina permissões de execução para o script**:
     ```bash
-    chmod +x login.sh
+    chmod +x /root/scripts/sh/login.sh
     ```
    ou
    ```bash
-    chmod +x login.lua
+    chmod +x /root/scripts/lua/login.lua
    ```
    ou
    ```bash
-    chmod +x login.ps1
+    chmod +x /root/scripts/ps/login.ps1
    ```
    ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
    ```bash
-    chmod +x login
+    chmod +x /root/scripts/hb/login
    ```
 
 3. **Execute o script de login**:
@@ -141,7 +141,7 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
 
 5. Configure o script para ser executado no login:
 
-    Salve os scrips em suas respectivas pastas
+    Salve os scripts em suas respectivas pastas
 
     ```bash
     
@@ -166,7 +166,7 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
 
     Edite o arquivo .bashrc do root:
     ```bash
-    nano /root/.bashrc
+    nano /root/.bashrc
     ```
     Adicione a seguinte linha ao final do arquivo:
     ```bash

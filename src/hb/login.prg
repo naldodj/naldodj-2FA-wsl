@@ -48,7 +48,7 @@ static function chkRootPWD()
     cPassWord:=GetHiddenPassword()
 
     #pragma __cstream|cCmd:=%s
-        perl "../perl/check_password.pl" "cPassWord" > cTmpPassWordFile 2>&1
+        perl "/root/scripts/perl/check_password.pl" "cPassWord" > cTmpPassWordFile 2>&1
     #pragma __endtext
     cCmd:=strTran(cCmd,"cPassWord",cPassWord)
     cCmd:=strTran(cCmd,"cTmpPassWordFile",cTmpPassWordFile)

@@ -7,6 +7,7 @@ SECRET_KEY_FILE = "/root/2FA/lua_2FAsecret_key.txt"
 
 -- Função para validar a senha do root usando Perl
 function chkRootPWD()
+  
     io.write("Digite a senha do root: ")
     os.execute("stty -echo")  -- Desativar a exibição de entrada
     local senha = io.read("*l")
@@ -15,7 +16,7 @@ function chkRootPWD()
 
     -- Executa a verificação da senha usando um comando Perl
     local cmd = string.format(
-        'perl "../perl/check_password.pl" "%s"',
+        'perl "/root/scripts/perl/check_password.pl" "%s"',
         senha
     )
     local handle = io.popen(cmd)
@@ -33,6 +34,7 @@ end
 
 -- Função para validar o código 2FA
 function chkRoot2FA()
+    
     local secret_key
 
     -- Verifica se o arquivo da chave secreta existe
@@ -43,10 +45,6 @@ function chkRoot2FA()
     else
         io.write("Arquivo da chave secreta não encontrado. Digite a chave secreta para 2FA: ")
         secret_key = io.read("*l")
-        -- Salva a chave secreta em um arquivo para futuras execuções
-        file = io.open(SECRET_KEY_FILE, "w")
-        file:write(secret_key)
-        file:close()
     end
 
     io.write("Digite o código 2FA: ")
@@ -59,6 +57,12 @@ function chkRoot2FA()
     handle:close()
 
     if resultado == codigo_2fa then
+        if not file then
+            -- Salva a chave secreta em um arquivo para futuras execuções
+            file = io.open(SECRET_KEY_FILE, "w")
+            file:write(secret_key)
+            file:close()
+        end
         print("Código 2FA correto")
         return true
     else

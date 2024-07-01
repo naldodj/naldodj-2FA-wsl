@@ -26,7 +26,7 @@ function chkRootPWD {
     $TmpPassWordFile = "/root/PS_tmp_chkRootPWD"
 
     # Verifica a senha utilizando um script em Perl
-    perl "../perl/check_password.pl" "$PassWord" > $TmpPassWordFile 2>&1
+    perl "/root/scripts/perl/check_password.pl" "$PassWord" > $TmpPassWordFile 2>&1
 
     # Verifica o código de saída do último comando executado
     $chkRootPWD = ($LASTEXITCODE -eq 0)

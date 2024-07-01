@@ -8,7 +8,7 @@ chkRootPWD() {
     # Solicita a senha de forma segura e armazena em uma variável
     read -s -p "Digite a senha do root: " senha
     # Executa a validação da senha usando Perl
-    perl "../perl/check_password.pl" "$senha"
+    perl "/root/scripts/perl/check_password.pl" "$senha"
 }
 
 # Função para validar o código 2FA
