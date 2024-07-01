@@ -3,9 +3,14 @@ REQUEST HB_CODEPAGE_UTF8EX
 function Main()
 
     local cSecretKey as character
-    local cSecretKeyFile as character:="/root/hb_2FAsecret_key.txt"
+    local cSecretKeyPath as character:="/root/2FA/"
+    local cSecretKeyFile as character:=hb_FNameMerge(cFilePath,"hb_2FAsecret_key",".txt")
 
     hb_cdpSelect("UTF8EX")
+
+    if (!hb_DirExists(cSecretKeyPath))
+        hb_DirCreate(cSecretKeyPath)
+    endif
 
     if (hb_FileExists(cSecretKeyFile))
         ? "A chave secreta já existe em ",cSecretKeyFile

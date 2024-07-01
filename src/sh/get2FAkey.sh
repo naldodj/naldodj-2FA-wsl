@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Nome do arquivo onde a chave secreta será armazenada
-SECRET_KEY_FILE="/root/2FAsecret_key.txt"
+SECRET_KEY_FILE="/root/2FA/sh_2FAsecret_key.txt"
 
 # Função para gerar uma chave secreta aleatória em Base32
 get2FAkey() {

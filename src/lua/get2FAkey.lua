@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 
-local SECRET_KEY_FILE = "/root/2FAsecret_key.txt"
+local SECRET_KEY_FILE = "/root/2FA/lua_2FAsecret_key.txt"
 
 -- Função para gerar uma chave secreta aleatória em Base32
 function get2FAkey()

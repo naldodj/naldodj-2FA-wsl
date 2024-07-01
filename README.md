@@ -26,87 +26,31 @@ sudo apt-get install lua-posix
 
 ### Passo 2: Gerar e Armazenar a Chave Secreta
 
-Vamos gerar uma chave secreta que será usada para gerar os códigos TOTP. Vamos armazenar essa chave em um arquivo seguro.
-
-Crie um script chamado `get2FAkey.sh`:
-
+Criar o diretório `/root/2FA/`
 ```bash
-#!/bin/bash
-
-# Nome do arquivo onde a chave secreta será armazenada
-SECRET_KEY_FILE="/root/2FAsecret_key.txt"
-
-# Função para gerar uma chave secreta aleatória em Base32
-get2FAkey() {
-    # Gera 20 bytes aleatórios (160 bits)
-    local secret_key=$(openssl rand -base64 20)
-
-    # Converte a chave secreta para Base32 usando Python
-    local base32_secret=$(python3 -c "import base64, base64; print(base64.b32encode(base64.b64decode('$secret_key')).decode('utf-8'))")
-
-    echo "$base32_secret"
-}
-
-# Verifica se o arquivo da chave secreta já existe
-if [ -f "$SECRET_KEY_FILE" ]; then
-    echo "A chave secreta já existe em $SECRET_KEY_FILE."
-else
-    # Gera uma nova chave secreta
-    base32_secret=$(get2FAkey)
-
-    # Armazena a chave secreta no arquivo
-    echo "$base32_secret" &gt; "$SECRET_KEY_FILE"
-
-    # Define permissões restritivas para o arquivo
-    chmod 600 "$SECRET_KEY_FILE"
-
-    echo "Chave secreta gerada e armazenada em $SECRET_KEY_FILE."
-fi
+makedir /root/2FA/
 ```
 
-Ou, Crie um script chamado `get2FAkey.lua`:
-
-```lua
-#!/usr/bin/lua
-
-local SECRET_KEY_FILE = "/root/2FAsecret_key.txt"
-
--- Função para gerar uma chave secreta aleatória em Base32
-function get2FAkey()
-    -- Gera 20 bytes aleatórios (160 bits) usando openssl
-    local handle = io.popen("openssl rand -base64 20")
-    local secret_key = handle:read("*a"):gsub("\n", "")
-    handle:close()
-
-    -- Converte a chave secreta para Base32 usando Python
-    local cmd = string.format([[python3 -c "import base64; print(base64.b32encode(base64.b64decode('%s')).decode('utf-8'))"]], secret_key)
-    handle = io.popen(cmd)
-    local base32_secret = handle:read("*a"):gsub("\n", "")
-    handle:close()
-
-    return base32_secret
-end
-
--- Verifica se o arquivo da chave secreta já existe
-local file = io.open(SECRET_KEY_FILE, "r")
-if file then
-    print(string.format("A chave secreta já existe em %s.", SECRET_KEY_FILE))
-    file:close()
-else
-    -- Gera uma nova chave secreta
-    local base32_secret = get2FAkey()
-
-    -- Armazena a chave secreta no arquivo
-    file = io.open(SECRET_KEY_FILE, "w")
-    file:write(base32_secret)
-    file:close()
-
-    -- Define permissões restritivas para o arquivo
-    os.execute(string.format("chmod 600 %s", SECRET_KEY_FILE))
-
-    print(string.format("Chave secreta gerada e armazenada em %s.", SECRET_KEY_FILE))
-end
+Criar o(s) diretório(s)
+```bash
+makedir /root/scripts/
+makedir /root/scripts/sh/
+makedir /root/scripts/lua/
+makedir /root/scripts/ps/
+makedir /root/scripts/hb/
+makedir /root/scripts/perl/
 ```
+
+Gerar uma chave secreta que será usada para gerar os códigos TOTP. Vamos armazenar essa chave em um arquivo seguro em `/root/2FA/`.
+
+Crie um script chamado: [get2FAkey.sh](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/sh/get2FAkey.sh)
+
+Ou, Crie um script chamado: [get2FAkey.lua](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/lua/get2FAkey.lua)
+
+Ou, ainda, Crie um script chamado: [get2FAkey.ps1](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/ps/get2FAkey.ps1)
+
+Ou: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
+
 
 Execute o script para gerar e armazenar a chave secreta:
 
@@ -114,6 +58,7 @@ Execute o script para gerar e armazenar a chave secreta:
 chmod +x get2FAkey.sh
 ./get2FAkey.sh
 ```
+
 ou
 
 ```bash
@@ -121,211 +66,115 @@ chmod +x get2FAkey.lua
 ./get2FAkey.lua
 ```
 
+ou
+
+```bash
+chmod +x get2FAkey.lua
+pwsh ./get2FAkey.ps1
+```
+
+ou, após compiar: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
+
+```bash
+chmod +x get2FAkey
+./get2FAkey
+```
+
 ### Passo 3: Configurar o Script de Login
 
 Agora, vamos criar um script de login que valida a senha do root e solicita o código 2FA.
 
-Crie um script chamado `login.sh`:
+Crie um script chamado: [login.sh](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/sh/login.sh)
+ou, Crie um script chamado: [login.lua](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/lua/login.lua)
+ou, ainda, Crie um script chamado: [login.ps1](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/ps/login.ps1)
+ou: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
 
-```bash
-#!/bin/bash
+### Passo 4: Configurar o Script para validar o Login
 
-# Caminho para o arquivo da chave secreta
-SECRET_KEY_FILE="/root/2FAsecret_key.txt"
+Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/perl/check_password.pl) , em `Perl`, que será utilizado para validar a senha pelos demais scripts.
 
-# Função para validar a senha do root usando Perl
-chkRootPWD() {
-    # Solicita a senha de forma segura e armazena em uma variável
-    read -s -p "Digite a senha do root: " senha
-
-    # Executa a validação da senha usando Perl
-    perl -e '
-        use strict;
-        use warnings;
-        my @pwent = getpwnam("root");
-        if (!@pwent) {die "Invalid username: root\n";}
-        if (crypt($ARGV[0], $pwent[1]) eq $pwent[1]) {
-            exit(0);
-        } else {
-            print STDERR "Invalid password for root\n";
-            exit(1);
-        }
-    ' "$senha"
-}
-
-# Função para validar o código 2FA
-chkRoot2FA() {
-
-    # Lê a chave secreta do arquivo
-    local secret_key
-
-    # Verifica se o arquivo da chave secreta existe
-    if [ ! -f "$SECRET_KEY_FILE" ]; then
-        # Solicita a chave secreta para autenticacao 2FA
-        read -p "Digite o código 2FA: " secret_key
-    else
-        # Obtem a chave secreta a partir do arquivo
-        secret_key=$(&lt;"$SECRET_KEY_FILE")
-    fi
-    
-    # Solicita o código 2FA
-    read -p "Digite o código 2FA: " codigo_2fa
-
-    # Verifica o código 2FA usando oathtool
-    oathtool --totp -b "$secret_key" | grep -q "^$codigo_2fa$"
-    return $?
-}
-
-# Captura do sinal SIGINT (Ctrl+C)
-trap '' INT
-
-# Loop principal para autenticação
-while true; do
-    if chkRootPWD; then
-        echo -e "\nSenha correta."
-        if chkRoot2FA; then
-            echo "Autenticação 2FA correta. Bem-vindo ao terminal."
-            exit 0
-        else
-            echo "Código 2FA incorreto. Tente novamente."
-        fi
-    else
-        echo -e "\nSenha incorreta. Tente novamente."
-    fi
-done
-
-```
-
-OU, Crie um script chamado `login.lua`:
-
-```lua
-#!/usr/bin/lua
-
-local posix = require("posix")
-
--- Caminho para o arquivo da chave secreta
-SECRET_KEY_FILE = "/root/2FAsecret_key.txt"
-
--- Função para validar a senha do root usando Perl
-function chkRootPWD()
-    io.write("Digite a senha do root: ")
-    os.execute("stty -echo")  -- Desativar a exibição de entrada
-    local senha = io.read("*l")
-    os.execute("stty echo")  -- Reativar a exibição de entrada
-    print()
-
-    -- Executa a verificação da senha usando um comando Perl
-    local cmd = string.format(
-        'perl -e \'use strict; use warnings; my @pwent = getpwnam("root"); if (!@pwent) {die "Invalid username: root\\n";} if (crypt("$ARGV[0]", $pwent[1]) eq $pwent[1]) {exit(0);} else {print STDERR "Invalid password for root\\n"; exit(1);}\' "%s"',
-        senha
-    )
-    local handle = io.popen(cmd)
-    local result = handle:close()
-    local exit_code = result and 0 or 1
-
-    if exit_code == 0 then
-        print("Senha válida")
-        return true
-    else
-        print("Senha inválida")
-        return false
-    end
-end
-
--- Função para validar o código 2FA
-function chkRoot2FA()
-    local secret_key
-
-    -- Verifica se o arquivo da chave secreta existe
-    local file = io.open(SECRET_KEY_FILE, "r")
-    if file then
-        secret_key = file:read("*all"):gsub("%s+", "")
-        file:close()
-    else
-        io.write("Arquivo da chave secreta não encontrado. Digite a chave secreta para 2FA: ")
-        secret_key = io.read("*l")
-        -- Salva a chave secreta em um arquivo para futuras execuções
-        file = io.open(SECRET_KEY_FILE, "w")
-        file:write(secret_key)
-        file:close()
-    end
-
-    io.write("Digite o código 2FA: ")
-    local codigo_2fa = io.read("*l")
-
-    -- Verifica o código 2FA usando `oathtool`
-    local cmd = string.format("oathtool --totp -b %s", secret_key)
-    local handle = io.popen(cmd)
-    local resultado = handle:read("*a"):gsub("%s+", "")
-    handle:close()
-
-    if resultado == codigo_2fa then
-        print("Código 2FA correto")
-        return true
-    else
-        print("Código 2FA incorreto")
-        return false
-    end
-end
-
--- Função para ignorar SIGINT (CTRL+C)
-function ignoreSIGINT()
-    posix.signal(posix.SIGINT, function() end)
-end
-
--- Captura do sinal SIGINT (Ctrl+C)
-ignoreSIGINT()
-
--- Loop principal para autenticação
-while true do
-    if chkRootPWD() then
-        print("\nSenha correta.")
-        if chkRoot2FA() then
-            print("Autenticação 2FA correta. Bem-vindo ao terminal.")
-            os.exit(0)
-        else
-            print("Código 2FA incorreto. Tente novamente.")
-        end
-    else
-        print("\nSenha incorreta. Tente novamente.")
-    end
-end
-```
-
-### Passo 4: Testar o Script de Login
+### Passo 5: Testar o Script de Login
 
 1. **Defina permissões de execução para o script**:
     ```bash
     chmod +x login.sh
     ```
-   ou 
+   ou
    ```bash
     chmod +x login.lua
+   ```
+   ou
+   ```bash
+    chmod +x login.ps1
+   ```
+   ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
+   ```bash
+    chmod +x login
    ```
 
 3. **Execute o script de login**:
     ```bash
-    ./login.sh
+    /root/scripts/sh/login.sh
     ```
-    ou 
+    ou
     ```bash
-    ./login.lua
+    /root/scripts/lua/login.lua
+    ```
+    ou
+    ```bash
+    pwsh /root/scripts/ps/login.ps1
+    ```
+    ou, opcionalmente e através do script [run_pslogin.sh](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/ps/run_pslogin.sh)
+    ```bash
+    /root/scripts/ps/run_pslogin.sh
+    ```
+    ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
+    ```bash
+    /root/scripts/hb/login
     ```
 
-4. **Configure o aplicativo de 2FA** (como Microsoft Authenticator, Google Authenticator ou Authy) com a chave secreta armazenada em `2FAsecret_key.txt`.
+4. **Configure o aplicativo de 2FA** (como Microsoft Authenticator, Google Authenticator ou Authy) com a chave secreta armazenada em:
+    `sh_2FAsecret_key.txt` ou
+    `lua_2FAsecret_key.txt` ou
+    `ps_2FAsecret_key.txt` ou
+    `hb_2FAsecret_key.txt` ou
 
 5. Configure o script para ser executado no login:
+
+    Salve os scrips em suas respectivas pastas
+
+    ```bash
+    
+    /root/scripts/sh/get2FAkey.sh
+    /root/scripts/sh/login.sh
+    
+    /root/scripts/lua/get2FAkey.lua
+    /root/scripts/lua/login.lua
+    
+    /root/scripts/perl/check_password.pl
+    
+    /root/scripts/ps/get2FAkey.ps1
+    /root/scripts/ps/login.ps1
+    /root/scripts/ps/run_pslogin.sh
+    
+    /root/scripts/hb/get2FAkey.prg
+    /root/scripts/hb/login.prg
+    /root/scripts/hb/get2FAkey
+    /root/scripts/hb/login
+    
+    ```    
+
     Edite o arquivo .bashrc do root:
     ```bash
     nano /root/.bashrc
     ```
     Adicione a seguinte linha ao final do arquivo:
     ```bash
-    /root/login.sh
-    ```
-    ou
-    ```bash
-    /root/login.lua
+    #Scripts Login
+    /root/scripts/sh/login.sh
+    #/root/scripts/lua/login.lua
+    #/root/scripts/ps/run_pslogin.sh
+    #/root/scripts/hb/login
     ```
 
     Teste a configuração:
@@ -334,7 +183,7 @@ end
     wsl --user root
     ```
 
-### Passo 5: Garanta que os scripts não possam ser acessados via \\wsl.localhost\ no windows
+### Passo 6: Garanta que os scripts não possam ser acessados via \\wsl.localhost\ no windows
 
 1. **Defina o usuário padrao
 ```bash

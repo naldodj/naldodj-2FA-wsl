@@ -2,8 +2,8 @@ function Main {
 
     Clear-Host
 
-    $SecretKeyFile = "/root/PS_2FAsecret_key.txt"
-    
+    $SecretKeyFile = "/root/2FA/ps_2FAsecret_key.txt"
+
     #TODO: Tratar interrupção via <CTRL+C>
     while ($true) {
         if (chkRootPWD) {

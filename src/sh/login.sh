@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Caminho para o arquivo da chave secreta
-SECRET_KEY_FILE="/root/2FAsecret_key.txt"
+SECRET_KEY_FILE="/root/2FA/sh_2FAsecret_key.txt"
 
 # Função para validar a senha do root usando Perl
 chkRootPWD() {
@@ -25,7 +25,7 @@ chkRoot2FA() {
         # Obtem a chave secreta a partir do arquivo
         secret_key=$(<"$SECRET_KEY_FILE")
     fi
-    
+
     # Solicita o código 2FA
     read -p "Digite o código 2FA: " codigo_2fa
 

@@ -7,14 +7,15 @@ REQUEST HB_CODEPAGE_UTF8EX
 
 function Main()
 
-    local cSecretKeyFile as character:="/root/hb_2FAsecret_key.txt"
+    local cSecretKeyPath as character:="/root/2FA/"
+    local cSecretKeyFile as character:=hb_FNameMerge(cFilePath,"hb_2FAsecret_key",".txt")
 
     hb_cdpSelect("UTF8EX")
 
     // Capturar SIGINT (Ctrl+C)
     SetKey(HB_K_CTRL_C,{||nil})
     SetKey(HB_K_ESC,{||nil})
-    
+
     // Capturar SIGINT (Ctrl+Break)
     Set( _SET_CANCEL, .F. )
 

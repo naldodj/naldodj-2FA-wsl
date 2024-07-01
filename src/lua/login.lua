@@ -3,7 +3,7 @@
 local posix = require("posix")
 
 -- Caminho para o arquivo da chave secreta
-SECRET_KEY_FILE = "/root/2FAsecret_key.txt"
+SECRET_KEY_FILE = "/root/2FA/lua_2FAsecret_key.txt"
 
 -- Função para validar a senha do root usando Perl
 function chkRootPWD()

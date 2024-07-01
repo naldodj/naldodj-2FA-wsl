@@ -1,5 +1,5 @@
 # Caminho para o arquivo da chave secreta
-$SECRET_KEY_FILE="/root/PS_2FAsecret_key.txt"
+$SECRET_KEY_FILE="/root/2FA/ps_2FAsecret_key.txt"
 
 function Generate2FAKey {
 
@@ -28,7 +28,7 @@ function Generate2FAKey {
     } else {
         $cBase32Secret=""
     }
-    
+
     return $cBase32Secret
 }
 
