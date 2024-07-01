@@ -50,7 +50,7 @@ Ou, Crie um script chamado: [get2FAkey.lua](https://github.com/naldodj/naldodj-2
 Ou, ainda, Crie um script chamado: [get2FAkey.ps1](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/ps/get2FAkey.ps1)
 
 Ou: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
-
+
 
 Execute o script para gerar e armazenar a chave secreta:
 
@@ -103,11 +103,11 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
    ```bash
     chmod +x login.lua
    ```
-   ou
+   ou
    ```bash
     chmod +x login.ps1
    ```
-   ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
+   ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
    ```bash
     chmod +x login
    ```
@@ -151,7 +151,7 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
     /root/scripts/lua/get2FAkey.lua
     /root/scripts/lua/login.lua
     
-    /root/scripts/perl/check_password.pl
+    /root/scripts/perl/check_password.pl
     
     /root/scripts/ps/get2FAkey.ps1
     /root/scripts/ps/login.ps1
