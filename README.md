@@ -171,10 +171,10 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
     Adicione a seguinte linha ao final do arquivo:
     ```bash
     #Scripts Login
-    /root/scripts/sh/login.sh
+    #/root/scripts/sh/login.sh
     #/root/scripts/lua/login.lua
     #/root/scripts/ps/run_pslogin.sh
-    #/root/scripts/hb/login
+    /root/scripts/hb/login
     ```
 
     Teste a configuração:
