@@ -166,7 +166,7 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
 
     Edite o arquivo .bashrc do root:
     ```bash
-    nano /root/.bashrc
+    nano /root/.bashrc
     ```
     Adicione a seguinte linha ao final do arquivo:
     ```bash
