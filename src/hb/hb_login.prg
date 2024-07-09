@@ -4,9 +4,13 @@
 #include "hbinkey.ch"
 #include "hbgtinfo.ch"
 
+#pragma -w3
+
 REQUEST HB_CODEPAGE_UTF8EX
 
-function Main()
+memvar GETLIST
+
+procedure Main()
 
     local cSecretKeyPath as character:="/root/2FA/"
     local cSecretKeyFile as character:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
@@ -45,7 +49,7 @@ static function chkRootPWD()
     local cPassWord as character
     local cTmpPassWordFile as character:="/root/hb_tmp_chkRootPWD"
     local lChkRootPWD as logical
-
+    
     local nResult as numeric
 
     cPassWord:=GetHiddenPassword()
@@ -69,14 +73,14 @@ static function chkRootPWD()
 
 static function chkRoot2FA(cSecretKeyFile as character)
 
-    local cCmd as character
     local cSecretKey as character
     local cCodigo2FA as character
-    local cTmpSecretKeyFile as character:="/root/hb_tmp_chkRoot2FA"
-
-    local nResult as numeric
 
     local lChkRoot2FA as logical
+    
+    local oHB_OTP as object
+
+    private GETLIST as array:=Array(0)
 
     if (hb_FileExists(cSecretKeyFile))
         cSecretKey:=hb_MemoRead(cSecretKeyFile)
@@ -88,24 +92,21 @@ static function chkRoot2FA(cSecretKeyFile as character)
     endif
     cSecretKey:=allTrim(strTran(cSecretKey,hb_eol(),""))
 
+    aSize(GETLIST,0)
+
     CLS
     cCodigo2FA:=Space(6)
     @ 0,0 SAY "Digite o código 2FA: " GET cCodigo2FA
     READ
 
-    cCmd:="oathtool --totp -b "+cSecretKey+" > "+cTmpSecretKeyFile+" 2>&1"
-    nResult:=hb_run(cCmd)
-    if (hb_FileExists(cTmpSecretKeyFile))
-        cSecretKey:=hb_MemoRead(cTmpSecretKeyFile)
-        hb_FileDelete(cTmpSecretKeyFile)
-        cSecretKey:=strTran(cSecretKey,hb_eol(),"")
-    endif
+    oHB_OTP:=hb_OTP():New()
+    cSecretKey:=oHB_OTP:OTP_TOTP(cSecretKey,6,30,"SHA1")
 
-    lChkRoot2FA:=((nResult==0).and.(cSecretKey==cCodigo2FA))
+    lChkRoot2FA:=(cSecretKey==cCodigo2FA)
     if ((lChkRoot2FA).and.(!hb_FileExists(cSecretKeyFile)))
         hb_MemoWrit(cSecretKeyFile,cSecretKey)
     endif
-
+    
     return(lChkRoot2FA) as logical
 
 static function GetHiddenPassword()
