@@ -44,30 +44,14 @@ procedure Main()
 
 static function chkRootPWD()
 
-    local cCmd as character
-    local cResult as character
     local cPassWord as character
-    local cTmpPassWordFile as character:="/root/hb_tmp_chkRootPWD"
     local lChkRootPWD as logical
-    
-    local nResult as numeric
+
+    local hUserInfo as hash:=hb_UserInfo("root")
 
     cPassWord:=GetHiddenPassword()
 
-    #pragma __cstream|cCmd:=%s
-        perl "/root/scripts/perl/check_password.pl" "cPassWord" > cTmpPassWordFile 2>&1
-    #pragma __endtext
-    cCmd:=strTran(cCmd,"cPassWord",cPassWord)
-    cCmd:=strTran(cCmd,"cTmpPassWordFile",cTmpPassWordFile)
-
-    nResult:=hb_run(cCmd)
-    if (hb_FileExists(cTmpPassWordFile))
-        cResult:=hb_MemoRead(cTmpPassWordFile)
-        hb_FileDelete(cTmpPassWordFile)
-        cResult:=allTrim(strTran(cResult,hb_eol(),""))
-    endif
-
-    lChkRootPWD:=((nResult==0).and.(cResult==""))
+    lChkRootPWD:=(HB_CRYPT(cPassword,hUserInfo["passwd"])==hUserInfo["passwd"])
 
     return(lChkRootPWD) as logical
 
@@ -77,7 +61,7 @@ static function chkRoot2FA(cSecretKeyFile as character)
     local cCodigo2FA as character
 
     local lChkRoot2FA as logical
-    
+
     local oHB_OTP as object
 
     private GETLIST as array:=Array(0)
@@ -106,7 +90,7 @@ static function chkRoot2FA(cSecretKeyFile as character)
     if ((lChkRoot2FA).and.(!hb_FileExists(cSecretKeyFile)))
         hb_MemoWrit(cSecretKeyFile,cSecretKey)
     endif
-    
+
     return(lChkRoot2FA) as logical
 
 static function GetHiddenPassword()
@@ -138,3 +122,115 @@ static function GetHiddenPassword()
    QQOut(hb_eol())
 
    return(AllTrim(cPassword)) as character
+
+#pragma BEGINDUMP
+
+    #include "hbapi.h"
+    #include "hbapierr.h"
+    #include "hbapiitm.h"
+    #include "hbapicls.h"
+    #include "hbapifs.h"
+
+    #include </usr/include/crypt.h>
+
+    #if defined( HB_OS_OS2 ) && defined( __GNUC__ )
+        #include <pwd.h>
+        #include <sys/types.h>
+    #elif defined( HB_OS_UNIX ) && ! defined( HB_OS_VXWORKS ) && ! defined( __WATCOMC__ )
+        #include <pwd.h>
+        #include <sys/types.h>
+        #include <unistd.h>
+        #include <shadow.h>
+    #endif
+
+    HB_FUNC_STATIC( HB_USERINFO )
+    {
+        const char * username = hb_parc( 1 );
+        if( username )
+        {
+            struct passwd * pwd = getpwnam( username );
+            if( pwd )
+            {
+                PHB_ITEM pHash = hb_hashNew( NULL );
+
+                PHB_ITEM pItemKey;
+                PHB_ITEM pItemValue;
+
+                pItemKey = hb_itemPutC( NULL, "name" );
+                pItemValue = hb_itemPutC( NULL, pwd->pw_name );
+                hb_hashAdd( pHash, pItemKey, pItemValue );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                pItemKey = hb_itemPutC( NULL, "passwd" );
+    #if defined( HB_OS_UNIX ) && ! defined( HB_OS_VXWORKS ) && ! defined( __WATCOMC__ )
+                struct spwd * spwd = getspnam( username );
+                if( spwd ) {
+                    pItemValue = hb_itemPutC( NULL, spwd->sp_pwdp );
+                } else {
+                    pItemValue = hb_itemPutC( NULL, pwd->pw_passwd );
+                }
+    #elif
+                pItemValue = hb_itemPutC( NULL, "x" );
+    #endif
+
+                hb_hashAdd( pHash, pItemKey, pItemValue );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                pItemKey = hb_itemPutC( NULL, "uid" );
+                pItemValue = hb_itemPutNI( NULL, pwd->pw_uid );
+                hb_hashAdd( pHash, pItemKey, pItemValue );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                pItemKey = hb_itemPutC( NULL, "gid" );
+                pItemValue = hb_itemPutNI( NULL, pwd->pw_gid );
+                hb_hashAdd( pHash, pItemKey, pItemValue );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                pItemKey = hb_itemPutC( NULL, "gecos" );
+                pItemValue = hb_itemPutC( NULL, pwd->pw_gecos );
+                hb_hashAdd( pHash, pItemKey, pItemValue );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                pItemKey = hb_itemPutC( NULL, "dir" );
+                pItemValue = hb_itemPutC( NULL, pwd->pw_dir );
+                hb_hashAdd( pHash, pItemKey, pItemValue );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                hb_hashAdd( pHash, hb_itemPutC( NULL, "shell" ), hb_itemPutC( NULL, pwd->pw_shell ) );
+                hb_itemRelease( pItemKey );
+                hb_itemRelease( pItemValue );
+
+                hb_itemReturnRelease( pHash );
+
+                return;
+            }
+        }
+        hb_retc_null();
+    }
+
+    HB_FUNC_STATIC( HB_CRYPT )
+    {
+        const char * password = hb_parc( 1 );
+        const char * salt = hb_parc( 2 );
+
+        if( password && salt )
+        {
+            char * encrypted = crypt( password, salt );
+            if( encrypted )
+                hb_retc( encrypted );
+            else
+                hb_retc_null();
+        }
+        else
+        {
+            hb_retc_null();
+        }
+    }
+
+#pragma ENDDUMP

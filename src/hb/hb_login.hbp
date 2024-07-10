@@ -8,6 +8,7 @@
 -lhbnf
 -lhbct
 -lssl
+-lcrypt
 -lcrypto
 -lm
 -lhbgt
