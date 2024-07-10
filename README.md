@@ -70,10 +70,10 @@ ou
 
 ```bash
 chmod +x /root/scripts/ps/get2FAkey.lua
-pwsh /root/scripts/ps/get2FAkey.ps1
+pwsh /root/scripts/ps/get2FAkey.ps1
 ```
 
-ou, após compiar: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
+ou, após compilar: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
 
 ```bash
 chmod +x /root/scripts/hb/get2FAkey
