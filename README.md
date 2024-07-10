@@ -49,8 +49,8 @@ Ou, Crie um script chamado: [get2FAkey.lua](https://github.com/naldodj/naldodj-2
 
 Ou, ainda, Crie um script chamado: [get2FAkey.ps1](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/ps/get2FAkey.ps1)
 
-Ou: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg)
-
+Ou: [get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.prg) : Dependente de LUA,PERL e PHYTON
+Ou: [hb_get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_get2FAkey.prg) : Não Dependente de LUA,PERL ou PHYTON
 
 Execute o script para gerar e armazenar a chave secreta:
 
@@ -80,6 +80,13 @@ chmod +x /root/scripts/hb/get2FAkey
 /root/scripts/hb/get2FAkey
 ```
 
+ou, após compilar: [hb_get2FAkey.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_get2FAkey.prg)
+
+```bash
+chmod +x /root/scripts/hb/hb_get2FAkey
+/root/scripts/hb/hb_get2FAkey
+```
+
 ### Passo 3: Configurar o Script de Login
 
 Agora, vamos criar um script de login que valida a senha do root e solicita o código 2FA.
@@ -87,11 +94,12 @@ Agora, vamos criar um script de login que valida a senha do root e solicita o c�
 Crie um script chamado: [login.sh](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/sh/login.sh)
 ou, Crie um script chamado: [login.lua](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/lua/login.lua)
 ou, ainda, Crie um script chamado: [login.ps1](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/ps/login.ps1)
-ou: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
+ou: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)  : Dependente de LUA,PERL e PHYTON
+ou: [hb_login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_login.prg)  : Não dependente de LUA,PERL e PHYTON
 
 ### Passo 4: Configurar o Script para validar o Login
 
-Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/perl/check_password.pl) , em `Perl`, que será utilizado para validar a senha pelos demais scripts.
+Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/perl/check_password.pl) , em `Perl`, que será utilizado para validar a senha pelos demais scripts (exceto para  [hb_login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_login.prg))
 
 ### Passo 5: Testar o Script de Login
 
@@ -106,10 +114,14 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
    ou
    ```bash
     chmod +x /root/scripts/ps/login.ps1
-   ```
+   ```  
    ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
    ```bash
     chmod +x /root/scripts/hb/login
+   ```
+   ou, após compilar: [hb_login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_login.prg)
+   ```bash
+    chmod +x /root/scripts/hb/hb_login
    ```
 
 3. **Execute o script de login**:
@@ -131,6 +143,10 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
     ou, após compilar: [login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/login.prg)
     ```bash
     /root/scripts/hb/login
+    ```
+    ou, após compilar: [hb_login.prg](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_login.prg)
+    ```bash
+    /root/scripts/hb/hb_login
     ```
 
 4. **Configure o aplicativo de 2FA** (como Microsoft Authenticator, Google Authenticator ou Authy) com a chave secreta armazenada em:
@@ -157,10 +173,11 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
     /root/scripts/ps/login.ps1
     /root/scripts/ps/run_pslogin.sh
     
-    /root/scripts/hb/get2FAkey.prg
-    /root/scripts/hb/login.prg
     /root/scripts/hb/get2FAkey
     /root/scripts/hb/login
+
+    /root/scripts/hb/hb_get2FAkey
+    /root/scripts/hb/hb_login
     
     ```    
 
@@ -174,7 +191,8 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
     #/root/scripts/sh/login.sh
     #/root/scripts/lua/login.lua
     #/root/scripts/ps/run_pslogin.sh
-    /root/scripts/hb/login
+    #/root/scripts/hb/login
+    /root/scripts/hb/hb_login 
     ```
 
     Teste a configuração:
@@ -262,9 +280,22 @@ hbmk2 -version
 
 2. **Compilar os Scripts**:
 
+[get2FAkey.hbp](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.hbp)
+[login.hbp](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/get2FAkey.hbp)
+
 ```sh
-hbmk2 login.prg -o login
-hbmk2 get2FAkey.prg -o get2FAkey
+hbmk2 login.hbp
+hbmk2 get2FAkey.hbp
+```
+
+ou
+
+[hb_get2FAkey.hbp](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_get2FAkey.hbp)
+[hb_login.hbp](https://github.com/naldodj/naldodj-2FA-wsl/blob/main/src/hb/hb_get2FAkey.hbp)
+
+```sh
+hbmk2 hb_login.hbp
+hbmk2 hb_get2FAkey.hbp
 ```
 
 3. **Executar os Scripts**:
@@ -272,6 +303,11 @@ hbmk2 get2FAkey.prg -o get2FAkey
 ```sh
 sudo ./login
 sudo ./get2FAkey
+```
+ou
+```sh
+sudo ./hb_login
+sudo ./hb_get2FAkey
 ```
 
 ### Dependências Adicionais
@@ -284,11 +320,11 @@ sudo apt-get install openssl python3 oathtool
 
 ### Resumo dos Scripts
 
-1. **login.prg**:
+1. **login.prg e hb_login.prg**:
    - Valida a senha do root.
    - Verifica o código 2FA.
 
-2. **get2FAkey.prg**:
+2. **get2FAkey.prg e hb_get2FAkey.prg**:
    - Gera uma chave secreta para 2FA.
    - Armazena a chave em um arquivo protegido.
 
