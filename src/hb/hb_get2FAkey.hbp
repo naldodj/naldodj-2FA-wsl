@@ -1,0 +1,12 @@
+-w3 -es2
+
+-compr=max
+
+-lhbmisc
+-lhbnf
+-lhbct
+
+./hb_get2FAkey.prg
+./otp/hb_otp/src/hb/hb_base32.prg
+
+-o/root/scripts/hb/${hb_name}

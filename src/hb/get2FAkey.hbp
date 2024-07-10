@@ -1,0 +1,7 @@
+-w3 -es2
+
+-compr=max
+
+./get2FAkey.prg
+
+-o/root/scripts/hb/${hb_name}

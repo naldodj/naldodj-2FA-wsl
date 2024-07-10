@@ -1,0 +1,7 @@
+-w3 -es2
+
+-compr=max
+
+./login.prg
+
+-o/root/scripts/hb/${hb_name}
