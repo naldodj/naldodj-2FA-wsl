@@ -4,12 +4,18 @@
 #include "hbinkey.ch"
 #include "hbgtinfo.ch"
 
+#pragma -w3
+
 REQUEST HB_CODEPAGE_UTF8EX
 
-function Main()
+memvar GETLIST
+
+procedure Main()
 
     local cSecretKeyPath as character:="/root/2FA/"
     local cSecretKeyFile as character:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
+    
+    private GETLIST as array:=Array(0)
 
     hb_cdpSelect("UTF8EX")
 
@@ -87,6 +93,8 @@ static function chkRoot2FA(cSecretKeyFile as character)
         READ
     endif
     cSecretKey:=allTrim(strTran(cSecretKey,hb_eol(),""))
+
+    aSize(GETLIST,0)
 
     CLS
     cCodigo2FA:=Space(6)

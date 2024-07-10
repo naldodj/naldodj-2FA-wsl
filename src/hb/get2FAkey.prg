@@ -1,6 +1,8 @@
 REQUEST HB_CODEPAGE_UTF8EX
 
-function Main()
+#pragma -w3
+
+procedure Main()
 
     local cSecretKey as character
     local cSecretKeyPath as character:="/root/2FA/"
