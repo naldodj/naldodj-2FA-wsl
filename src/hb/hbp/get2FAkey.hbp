@@ -2,6 +2,6 @@
 
 -compr=max
 
-./login.prg
+../get2FAkey.prg
 
 -o/root/scripts/hb/${hb_name}
