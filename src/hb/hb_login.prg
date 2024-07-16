@@ -46,12 +46,25 @@ static function chkRootPWD()
 
     local cPassWord as character
     local lChkRootPWD as logical
-
-    local hUserInfo as hash:=hb_UserInfo("root")
+    
+    #if !defined( __PLATFORM__WINDOWS )
+        #if !defined( __PLATFORM__CYGWIN )
+            local hUserInfo as hash
+        #endif
+    #endif
 
     cPassWord:=GetHiddenPassword()
 
-    lChkRootPWD:=(HB_CRYPT(cPassword,hUserInfo["passwd"])==hUserInfo["passwd"])
+    #if !defined( __PLATFORM__WINDOWS )
+        #if !defined( __PLATFORM__CYGWIN )
+            hUserInfo:=hb_UserInfo("root")
+            lChkRootPWD:=(HB_CRYPT(cPassword,hUserInfo["passwd"])==hUserInfo["passwd"])
+        #else
+            lChkRootPWD:=(HB_WIN_VALIDATEPASSWORD(hb_UserName(),".",cPassWord))
+        #endif
+    #else
+        lChkRootPWD:=(HB_WIN_VALIDATEPASSWORD(hb_UserName(),".",cPassWord))
+    #endif
 
     return(lChkRootPWD) as logical
 
@@ -131,106 +144,147 @@ static function GetHiddenPassword()
     #include "hbapicls.h"
     #include "hbapifs.h"
 
-    #include </usr/include/crypt.h>
-
-    #if defined( HB_OS_OS2 ) && defined( __GNUC__ )
-        #include <pwd.h>
-        #include <sys/types.h>
-    #elif defined( HB_OS_UNIX ) && ! defined( HB_OS_VXWORKS ) && ! defined( __WATCOMC__ )
+    #if defined(__CYGWIN__) || defined(__PLATFORM__WINDOWS)
+        #include <windows.h>
+        #include <crypt.h>
         #include <pwd.h>
         #include <sys/types.h>
         #include <unistd.h>
-        #include <shadow.h>
+    #else
+        #include <crypt.h>
+        #if defined(HB_OS_OS2) && defined(__GNUC__)
+            #include <pwd.h>
+            #include <sys/types.h>
+        #elif defined(HB_OS_UNIX) && !defined(HB_OS_VXWORKS) && !defined(__WATCOMC__)
+            #include <pwd.h>
+            #include <sys/types.h>
+            #include <unistd.h>
+            #include <shadow.h>
+        #endif
     #endif
 
-    HB_FUNC_STATIC( HB_USERINFO )
-    {
-        const char * username = hb_parc( 1 );
-        if( username )
+    #if !defined( __PLATFORM__WINDOWS ) && !defined( __CYGWIN__ )
+
+        HB_FUNC_STATIC(HB_USERINFO)
         {
-            struct passwd * pwd = getpwnam( username );
-            if( pwd )
+            const char *username = hb_parc(1);
+            if (username)
             {
-                PHB_ITEM pHash = hb_hashNew( NULL );
+                struct passwd *pwd = getpwnam(username);
+                if (pwd)
+                {
+                    PHB_ITEM pHash = hb_hashNew(NULL);
 
-                PHB_ITEM pItemKey;
-                PHB_ITEM pItemValue;
+                    PHB_ITEM pItemKey;
+                    PHB_ITEM pItemValue;
 
-                pItemKey = hb_itemPutC( NULL, "name" );
-                pItemValue = hb_itemPutC( NULL, pwd->pw_name );
-                hb_hashAdd( pHash, pItemKey, pItemValue );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
+                    pItemKey = hb_itemPutC(NULL, "name");
+                    pItemValue = hb_itemPutC(NULL, pwd->pw_name);
+                    hb_hashAdd(pHash, pItemKey, pItemValue);
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
 
-                pItemKey = hb_itemPutC( NULL, "passwd" );
-    #if defined( HB_OS_UNIX ) && ! defined( HB_OS_VXWORKS ) && ! defined( __WATCOMC__ )
-                struct spwd * spwd = getspnam( username );
-                if( spwd ) {
-                    pItemValue = hb_itemPutC( NULL, spwd->sp_pwdp );
-                } else {
-                    pItemValue = hb_itemPutC( NULL, pwd->pw_passwd );
+                    pItemKey = hb_itemPutC(NULL, "passwd");
+                    #if defined(HB_OS_UNIX) && !defined(HB_OS_VXWORKS) && !defined(__WATCOMC__) && !defined(__CYGWIN__)
+                        struct spwd *spwd = getspnam(username);
+                        if (spwd)
+                        {
+                            pItemValue = hb_itemPutC(NULL, spwd->sp_pwdp);
+                        }
+                        else
+                        {
+                            pItemValue = hb_itemPutC(NULL, pwd->pw_passwd);
+                        }
+                    #else
+                        pItemValue = hb_itemPutC(NULL, "x");
+                    #endif
+
+                    hb_hashAdd(pHash, pItemKey, pItemValue);
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
+
+                    pItemKey = hb_itemPutC(NULL, "uid");
+                    pItemValue = hb_itemPutNI(NULL, pwd->pw_uid);
+                    hb_hashAdd(pHash, pItemKey, pItemValue);
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
+
+                    pItemKey = hb_itemPutC(NULL, "gid");
+                    pItemValue = hb_itemPutNI(NULL, pwd->pw_gid);
+                    hb_hashAdd(pHash, pItemKey, pItemValue);
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
+
+                    pItemKey = hb_itemPutC(NULL, "gecos");
+                    pItemValue = hb_itemPutC(NULL, pwd->pw_gecos);
+                    hb_hashAdd(pHash, pItemKey, pItemValue);
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
+
+                    pItemKey = hb_itemPutC(NULL, "dir");
+                    pItemValue = hb_itemPutC(NULL, pwd->pw_dir);
+                    hb_hashAdd(pHash, pItemKey, pItemValue);
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
+
+                    hb_hashAdd(pHash, hb_itemPutC(NULL, "shell"), hb_itemPutC(NULL, pwd->pw_shell));
+                    hb_itemRelease(pItemKey);
+                    hb_itemRelease(pItemValue);
+
+                    hb_itemReturnRelease(pHash);
+
+                    return;
                 }
-    #elif
-                pItemValue = hb_itemPutC( NULL, "x" );
-    #endif
-
-                hb_hashAdd( pHash, pItemKey, pItemValue );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
-
-                pItemKey = hb_itemPutC( NULL, "uid" );
-                pItemValue = hb_itemPutNI( NULL, pwd->pw_uid );
-                hb_hashAdd( pHash, pItemKey, pItemValue );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
-
-                pItemKey = hb_itemPutC( NULL, "gid" );
-                pItemValue = hb_itemPutNI( NULL, pwd->pw_gid );
-                hb_hashAdd( pHash, pItemKey, pItemValue );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
-
-                pItemKey = hb_itemPutC( NULL, "gecos" );
-                pItemValue = hb_itemPutC( NULL, pwd->pw_gecos );
-                hb_hashAdd( pHash, pItemKey, pItemValue );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
-
-                pItemKey = hb_itemPutC( NULL, "dir" );
-                pItemValue = hb_itemPutC( NULL, pwd->pw_dir );
-                hb_hashAdd( pHash, pItemKey, pItemValue );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
-
-                hb_hashAdd( pHash, hb_itemPutC( NULL, "shell" ), hb_itemPutC( NULL, pwd->pw_shell ) );
-                hb_itemRelease( pItemKey );
-                hb_itemRelease( pItemValue );
-
-                hb_itemReturnRelease( pHash );
-
-                return;
             }
-        }
-        hb_retc_null();
-    }
-
-    HB_FUNC_STATIC( HB_CRYPT )
-    {
-        const char * password = hb_parc( 1 );
-        const char * salt = hb_parc( 2 );
-
-        if( password && salt )
-        {
-            char * encrypted = crypt( password, salt );
-            if( encrypted )
-                hb_retc( encrypted );
-            else
-                hb_retc_null();
-        }
-        else
-        {
             hb_retc_null();
         }
-    }
+        
+        HB_FUNC_STATIC(HB_CRYPT)
+        {
+            const char *password = hb_parc(1);
+            const char *salt = hb_parc(2);
+
+            if (password && salt)
+            {
+                char *encrypted = crypt(password, salt);
+                if (encrypted)
+                    hb_retc(encrypted);
+                else
+                    hb_retc_null();
+            }
+            else
+            {
+                hb_retc_null();
+            }
+        }
+        
+
+    #else
+
+        HB_FUNC_STATIC(HB_WIN_VALIDATEPASSWORD)
+        {
+            const char *username = hb_parc(1);
+            const char *domain = hb_parc(2);
+            const char *password = hb_parc(3);
+
+            HANDLE hToken;
+            BOOL result = LogonUserA(
+                username,
+                domain,
+                password,
+                LOGON32_LOGON_INTERACTIVE,
+                LOGON32_PROVIDER_DEFAULT,
+                &hToken
+            );
+
+            if (result)
+            {
+                CloseHandle(hToken);
+            }
+
+            hb_retl(result);
+        }
+
+    #endif
 
 #pragma ENDDUMP

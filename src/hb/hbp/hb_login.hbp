@@ -2,7 +2,10 @@
 
 -compr=max
 
--i./otp/hb_otp/src/libcotp/libcotp/src/
+-i../otp/hb_otp/src/libcotp/libcotp/src/
+-i../otp/hb_otp/src/libcotp/libcotp/src/utils/
+-I../../hb/otp/hb_otp/src/libcotp/libcotp/src/
+-I../../hb/otp/hb_otp/src/libcotp/libcotp/src/utils/
 
 -lhbmisc
 -lhbnf
