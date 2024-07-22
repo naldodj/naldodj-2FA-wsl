@@ -1,0 +1,3 @@
+[submodule "src/hb/otp/hb_otp"]
+	path = src/hb/otp/hb_otp
+	url = https://github.com/naldodj/naldodj-hb_otp
