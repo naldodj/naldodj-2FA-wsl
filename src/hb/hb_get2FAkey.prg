@@ -31,29 +31,13 @@ procedure Main()
 static function Generate2FAKey()
 
     local cSecretKey as character
-    local cTmpSecretKey as character
     local cBase32Secret as character
     local ohb_Base32 as object:=hb_Base32():New()
 
-    // Gerar 20 bytes aleatórios usando OpenSSL
-    cTmpSecretKey:="/root/hb_2FA_tmp_secret_key"
-    hb_run("openssl rand -base64 20 > "+cTmpSecretKey)
-
-    // Verifica se o arquivo foi gerado com a chave
-    if (hb_FileExists(cTmpSecretKey))
-
-        cSecretKey:=hb_memoread(cTmpSecretKey)
-        hb_FileDelete(cTmpSecretKey)
-
-        cSecretKey:=strTran(cSecretKey,hb_eol(),"")
-
-        // Converter a chave secreta para Base32
-        cBase32Secret:=ohb_Base32:Encode_C(cSecretKey)
-
-    else
-
-        cBase32Secret:=""
-
-    endif
+    // Gerar 20 bytes aleatórios usando Harbour
+    cSecretKey:=hb_base64Encode(hb_randStr(20),.F.)
+    
+    // Converter a chave secreta para Base32
+    cBase32Secret:=ohb_Base32:Encode_C(cSecretKey)
 
     return(cBase32Secret) as character
