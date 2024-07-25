@@ -12,7 +12,12 @@ memvar GETLIST
 
 procedure Main()
 
+#if defined( __PLATFORM__WINDOWS )
+    local cSecretKeyPath as character:="c:\root\2FA\"
+#else
     local cSecretKeyPath as character:="/root/2FA/"
+#endif    
+
     local cSecretKeyFile as character:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
 
     hb_cdpSelect("UTF8EX")
