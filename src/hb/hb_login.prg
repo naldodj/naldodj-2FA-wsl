@@ -1,3 +1,4 @@
+#include "hbver.ch"
 #include "color.ch"
 #include "inkey.ch"
 #include "setcurs.ch"
@@ -10,41 +11,91 @@ REQUEST HB_CODEPAGE_UTF8EX
 
 memvar GETLIST
 
-procedure Main()
+procedure Main(...)
 
-#if defined( __PLATFORM__WINDOWS )
+    local aArgs as array:=hb_AParams()
+
+    local cParam as character
+    local cArgName as character
+#if defined( HB_OS_WIN )
     local cSecretKeyPath as character:="c:\root\2FA\"
 #else
     local cSecretKeyPath as character:="/root/2FA/"
 #endif    
-
-    local cSecretKeyFile as character:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
+    local cSecretKeyFile as character
+    
+    local idx as numeric
+    local nSizeSecretKey as numeric
 
     hb_cdpSelect("UTF8EX")
+    
+    begin sequence
 
-    // Capturar SIGINT (Ctrl+C)
-    SetKey(HB_K_CTRL_C,{||nil})
-    SetKey(HB_K_ESC,{||nil})
-
-    // Capturar SIGINT (Ctrl+Break)
-    Set(_SET_CANCEL,.F.)
-
-    CLS
-
-    while (.T.)
-        if (chkRootPWD())
-            ? "Senha correta."
-            if (chkRoot2FA(cSecretKeyFile))
-                ? "Autenticação 2FA correta. Bem-vindo ao terminal."
-                exit
-            else
-                ? "Código 2FA incorreto. Tente novamente."
-            endif
-        else
-            ? "Senha incorreta. Tente novamente."
+        if (;
+                (!Empty(aArgs));
+                .and.;
+                (;
+                    Lower(aArgs[1])=="-h";
+                    .or.;
+                    Lower(aArgs[1])=="--help";
+                );
+        )
+            ShowHelp(nil,aArgs)
+            break
         endif
-    end while
 
+        for each cParam in aArgs
+            if (!Empty(cParam))
+                if ((idx:=At("=",cParam))==0)
+                    cArgName:=Lower(cParam)
+                    cParam:=""
+                else
+                    cArgName:=Left(cParam,idx-1)
+                    cParam:=SubStr(cParam,idx+1)
+                endif
+                do case
+                    case (cArgName=="-s")
+                        nSizeSecretKey:=val(cParam)
+                    otherwise
+                        ShowHelp("Unrecognized option:"+cArgName+iif(Len(cParam)>0,"="+cParam,""))
+                        break
+                endcase
+            endif
+        next each
+        
+        hb_default(@nSizeSecretKey,20)    
+
+        if ("CYGWIN_NT"$OS())
+            cSecretKeyPath:="c:\root\2FA\"
+        endif
+
+        cSecretKeyFile:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
+
+        // Capturar SIGINT (Ctrl+C)
+        SetKey(HB_K_CTRL_C,{||nil})
+        SetKey(HB_K_ESC,{||nil})
+
+        // Capturar SIGINT (Ctrl+Break)
+        Set(_SET_CANCEL,.F.)
+
+        CLS
+
+        while (.T.)
+            if (chkRootPWD())
+                ? "Senha correta."
+                if (chkRoot2FA(cSecretKeyFile,nSizeSecretKey))
+                    ? "Autenticação 2FA correta. Bem-vindo ao terminal."
+                    exit
+                else
+                    ? "Código 2FA incorreto. Tente novamente."
+                endif
+            else
+                ? "Senha incorreta. Tente novamente."
+            endif
+        end while
+    
+    end sequence
+    
     return
 
 static function chkRootPWD()
@@ -73,8 +124,9 @@ static function chkRootPWD()
 
     return(lChkRootPWD) as logical
 
-static function chkRoot2FA(cSecretKeyFile as character)
+static function chkRoot2FA(cSecretKeyFile as character,nSizeSecretKey as numeric)
 
+    local cOTPKey as character
     local cSecretKey as character
     local cCodigo2FA as character
 
@@ -88,7 +140,7 @@ static function chkRoot2FA(cSecretKeyFile as character)
         cSecretKey:=hb_MemoRead(cSecretKeyFile)
     else
         CLS
-        cSecretKey:=Space(32)
+        cSecretKey:=Space(nSizeSecretKey)
         @ 0,0 SAY "Digite a chave secreta para 2FA: " GET cSecretKey
         READ
     endif
@@ -102,9 +154,9 @@ static function chkRoot2FA(cSecretKeyFile as character)
     READ
 
     oHB_OTP:=hb_OTP():New()
-    cSecretKey:=oHB_OTP:OTP_TOTP(cSecretKey,6,30,"SHA1")
+    cOTPKey:=oHB_OTP:OTP_TOTP(cSecretKey,6,30,"SHA1")
 
-    lChkRoot2FA:=(cSecretKey==cCodigo2FA)
+    lChkRoot2FA:=(cOTPKey==cCodigo2FA)
     if ((lChkRoot2FA).and.(!hb_FileExists(cSecretKeyFile)))
         hb_MemoWrit(cSecretKeyFile,cSecretKey)
     endif
@@ -140,6 +192,75 @@ static function GetHiddenPassword()
    QQOut(hb_eol())
 
    return(AllTrim(cPassword)) as character
+
+static procedure ShowSubHelp(xLine as anytype,/*@*/nMode as numeric,nIndent as numeric,n as numeric)
+
+   DO CASE
+      CASE xLine == NIL
+      CASE HB_ISNUMERIC( xLine )
+         nMode := xLine
+      CASE HB_ISEVALITEM( xLine )
+         Eval( xLine )
+      CASE HB_ISARRAY( xLine )
+         IF nMode == 2
+            OutStd( Space( nIndent ) + Space( 2 ) )
+         ENDIF
+         AEval( xLine, {| x, n | ShowSubHelp( x, @nMode, nIndent + 2, n ) } )
+         IF nMode == 2
+            OutStd( hb_eol() )
+         ENDIF
+      OTHERWISE
+         DO CASE
+            CASE nMode == 1 ; OutStd( Space( nIndent ) + xLine + hb_eol() )
+            CASE nMode == 2 ; OutStd( iif( n > 1, ", ", "" ) + xLine )
+            OTHERWISE       ; OutStd( "(" + hb_ntos( nMode ) + ") " + xLine + hb_eol() )
+         ENDCASE
+   ENDCASE
+
+   RETURN
+
+static function HBRawVersion()
+   return(;
+       hb_StrFormat( "%d.%d.%d%s (%s) (%s)";
+      ,hb_Version(HB_VERSION_MAJOR);
+      ,hb_Version(HB_VERSION_MINOR);
+      ,hb_Version(HB_VERSION_RELEASE);
+      ,hb_Version(HB_VERSION_STATUS);
+      ,hb_Version(HB_VERSION_ID);
+      ,"20"+Transform(hb_Version(HB_VERSION_REVISION),"99-99-99 99:99"));
+   ) as character
+
+static procedure ShowHelp(cExtraMessage as character,aArgs as array)
+
+   local aHelp as array
+   local nMode as numeric:=1
+
+   if (Empty(aArgs).or.(Len(aArgs)<=1).or.(Empty(aArgs[1])))
+      aHelp:={;
+         cExtraMessage;
+         ,"HB_GET2FAKEY ("+ExeName()+") "+HBRawVersion();
+         ,"Copyright (c) 2024-"+hb_NToS(Year(Date()))+", "+hb_Version(HB_VERSION_URL_BASE);
+         ,"";
+         ,"Syntax:";
+         ,"";
+         ,{ExeName()+" [options]"};
+         ,"";
+         ,"Options:";
+         ,{;
+             "-h or --help       Show this help screen";
+            ,"-s=<digits>        Specify the number of digits in the key code";
+         };
+         ,"";
+      }
+   else
+      ShowHelp("Unrecognized help option")
+      return
+   endif
+
+   /* using hbmk2 style */
+   aEval(aHelp,{|x|ShowSubHelp(x,@nMode,0)})
+
+   return
 
 #pragma BEGINDUMP
 

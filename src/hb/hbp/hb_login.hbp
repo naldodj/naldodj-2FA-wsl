@@ -37,7 +37,8 @@
 -cflag=-Wno-sign-compare
 -cflag=-Wno-format-nonliteral
 -cflag=-U_FORTIFY_SOURCE
--cflag=-D_FORTIFY_SOURCE=3
+{cygwin}-cflag=-D_FORTIFY_SOURCE=1
+{!cygwin}-cflag=-D_FORTIFY_SOURCE=3
 -cflag=-DHMAC_WRAPPER=openssl
 
 ../hb_login.prg

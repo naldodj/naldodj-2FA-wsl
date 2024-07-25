@@ -5,6 +5,12 @@
 -lhbmisc
 -lhbnf
 -lhbct
+-lssl
+-lcrypt
+-lcrypto
+-lm
+-lhbgt
+-lgcrypt
 
 ../hb_get2FAkey.prg
 ../otp/hb_otp/src/hb/hb_base32.prg
