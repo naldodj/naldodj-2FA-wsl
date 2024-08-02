@@ -192,7 +192,7 @@ Vamos precisar de um scrit [check_password.pl](https://github.com/naldodj/naldod
     #/root/scripts/lua/login.lua
     #/root/scripts/ps/run_pslogin.sh
     #/root/scripts/hb/login
-    /root/scripts/hb/hb_login 
+    /$(whoami)/scripts/hb/hb_login -u=$(whoami)
     ```
 
     Teste a configuração:
