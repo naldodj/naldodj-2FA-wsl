@@ -17,18 +17,20 @@ procedure Main(...)
 
     local cParam as character
     local cArgName as character
+    local cUserName:=hb_UserName() as character
 #if defined( HB_OS_WIN )
-    local cSecretKeyPath as character:="c:\root\2FA\"
+    local cSecretKeyPath as character:="c:\"+cUserName+"\2FA\"
 #else
-    local cSecretKeyPath as character:="/root/2FA/"
-#endif    
+    local cSecretKeyPath as character:="/"+cUserName+"/2FA/"
+#endif
     local cSecretKeyFile as character
-    
+
     local idx as numeric
+    local nSizeOTPCode as numeric
     local nSizeSecretKey as numeric
 
     hb_cdpSelect("UTF8EX")
-    
+
     begin sequence
 
         if (;
@@ -54,19 +56,25 @@ procedure Main(...)
                     cParam:=SubStr(cParam,idx+1)
                 endif
                 do case
-                    case (cArgName=="-s")
+                    case (cArgName=="-sotp")
+                        nSizeOTPCode:=val(cParam)
+                    case (cArgName=="-skey")
                         nSizeSecretKey:=val(cParam)
+                    case (cArgName=="-u").or.(cArgName=="-user")
+                        cSecretKeyPath:=strTran(cSecretKeyPath,cUserName,cParam)
+                        cUserName:=cParam
                     otherwise
                         ShowHelp("Unrecognized option:"+cArgName+iif(Len(cParam)>0,"="+cParam,""))
                         break
                 endcase
             endif
         next each
-        
-        hb_default(@nSizeSecretKey,20)    
+
+        hb_default(@nSizeOTPCode,6)
+        hb_default(@nSizeSecretKey,20)
 
         if ("CYGWIN_NT"$OS())
-            cSecretKeyPath:="c:\root\2FA\"
+            cSecretKeyPath:="c:\"+cUserName+"\2FA\"
         endif
 
         cSecretKeyFile:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
@@ -81,9 +89,9 @@ procedure Main(...)
         CLS
 
         while (.T.)
-            if (chkRootPWD())
+            if (chkUserPWD(cUserName))
                 ? "Senha correta."
-                if (chkRoot2FA(cSecretKeyFile,nSizeSecretKey))
+                if (ChkUser2FA(cSecretKeyFile,nSizeSecretKey,nSizeOTPCode))
                     ? "Autenticação 2FA correta. Bem-vindo ao terminal."
                     exit
                 else
@@ -93,16 +101,16 @@ procedure Main(...)
                 ? "Senha incorreta. Tente novamente."
             endif
         end while
-    
+
     end sequence
-    
+
     return
 
-static function chkRootPWD()
+static function chkUserPWD(cUserName as character)
 
     local cPassWord as character
-    local lChkRootPWD as logical
-    
+    local lchkUserPWD as logical
+
     #if !defined( __PLATFORM__WINDOWS )
         #if !defined( __PLATFORM__CYGWIN )
             local hUserInfo as hash
@@ -113,24 +121,24 @@ static function chkRootPWD()
 
     #if !defined( __PLATFORM__WINDOWS )
         #if !defined( __PLATFORM__CYGWIN )
-            hUserInfo:=hb_UserInfo("root")
-            lChkRootPWD:=(HB_CRYPT(cPassword,hUserInfo["passwd"])==hUserInfo["passwd"])
+            hUserInfo:=hb_UserInfo(cUserName)
+            lchkUserPWD:=(HB_CRYPT(cPassword,hUserInfo["passwd"])==hUserInfo["passwd"])
         #else
-            lChkRootPWD:=(HB_WIN_VALIDATEPASSWORD(hb_UserName(),".",cPassWord))
+            lchkUserPWD:=(HB_WIN_VALIDATEPASSWORD(cUserName,".",cPassWord))
         #endif
     #else
-        lChkRootPWD:=(HB_WIN_VALIDATEPASSWORD(hb_UserName(),".",cPassWord))
+        lchkUserPWD:=(HB_WIN_VALIDATEPASSWORD(cUserName,".",cPassWord))
     #endif
 
-    return(lChkRootPWD) as logical
+    return(lchkUserPWD) as logical
 
-static function chkRoot2FA(cSecretKeyFile as character,nSizeSecretKey as numeric)
+static function ChkUser2FA(cSecretKeyFile as character,nSizeSecretKey as numeric,nSizeOTPCode as numeric)
 
     local cOTPKey as character
     local cSecretKey as character
     local cCodigo2FA as character
 
-    local lChkRoot2FA as logical
+    local lChkUser2FA as logical
 
     local oHB_OTP as object
 
@@ -149,19 +157,19 @@ static function chkRoot2FA(cSecretKeyFile as character,nSizeSecretKey as numeric
     aSize(GETLIST,0)
 
     CLS
-    cCodigo2FA:=Space(6)
+    cCodigo2FA:=Space(nSizeOTPCode)
     @ 0,0 SAY "Digite o código 2FA: " GET cCodigo2FA
     READ
 
     oHB_OTP:=hb_OTP():New()
-    cOTPKey:=oHB_OTP:OTP_TOTP(cSecretKey,6,30,"SHA1")
+    cOTPKey:=oHB_OTP:OTP_TOTP(cSecretKey,nSizeOTPCode,30,"SHA1")
 
-    lChkRoot2FA:=(cOTPKey==cCodigo2FA)
-    if ((lChkRoot2FA).and.(!hb_FileExists(cSecretKeyFile)))
+    lChkUser2FA:=(cOTPKey==cCodigo2FA)
+    if ((lChkUser2FA).and.(!hb_FileExists(cSecretKeyFile)))
         hb_MemoWrit(cSecretKeyFile,cSecretKey)
     endif
 
-    return(lChkRoot2FA) as logical
+    return(lChkUser2FA) as logical
 
 static function GetHiddenPassword()
 
@@ -247,8 +255,12 @@ static procedure ShowHelp(cExtraMessage as character,aArgs as array)
          ,"";
          ,"Options:";
          ,{;
-             "-h or --help       Show this help screen";
-            ,"-s=<digits>        Specify the number of digits in the key code";
+             "-h                 Show this help screen or";
+            ,"--help             Show this help screen";
+            ,"-sotp=<digits>     Specify the number of digits in the otp code";
+            ,"-skey=<digits>     Specify the number of digits in the key code";
+            ,"-u=<user name>     Specify the user name or";
+            ,"-user=<user name>  Specify the user name";
          };
          ,"";
       }
@@ -364,7 +376,7 @@ static procedure ShowHelp(cExtraMessage as character,aArgs as array)
             }
             hb_retc_null();
         }
-        
+
         HB_FUNC_STATIC(HB_CRYPT)
         {
             const char *password = hb_parc(1);
@@ -383,7 +395,7 @@ static procedure ShowHelp(cExtraMessage as character,aArgs as array)
                 hb_retc_null();
             }
         }
-        
+
 
     #else
 

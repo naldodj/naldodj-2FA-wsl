@@ -11,10 +11,11 @@ procedure Main(...)
     local cParam as character
     local cArgName as character
     local cSecretKey as character
+    local cUserName as character:=hb_UserName() 
 #if defined( HB_OS_WIN )
     local cSecretKeyPath as character:="c:\root\2FA\"
 #else
-    local cSecretKeyPath as character:="/root/2FA/"
+    local cSecretKeyPath as character:="/"+cUserName+"/2FA/"
 #endif    
     local cSecretKeyFile as character
     
@@ -26,7 +27,7 @@ procedure Main(...)
     hb_cdpSelect("UTF8EX")
 
     if ("CYGWIN_NT"$OS())
-        cSecretKeyPath:="c:\root\2FA\"
+        cSecretKeyPath:="c:\"+cUserName+"\2FA\"
     endif
 
     cSecretKeyFile:=hb_FNameMerge(cSecretKeyPath,"hb_2FAsecret_key",".txt")
@@ -47,24 +48,27 @@ procedure Main(...)
         endif
 
         for each cParam in aArgs
-         if (!Empty(cParam))
-            if ((idx:=At("=",cParam))==0)
-               cArgName:=Lower(cParam)
-               cParam:=""
-            else
-               cArgName:=Left(cParam,idx-1)
-               cParam:=SubStr(cParam,idx+1)
+            if (!Empty(cParam))
+                if ((idx:=At("=",cParam))==0)
+                    cArgName:=Lower(cParam)
+                    cParam:=""
+                else
+                    cArgName:=Left(cParam,idx-1)
+                    cParam:=SubStr(cParam,idx+1)
+                endif
+                do case
+                    case (cArgName=="-s")
+                        nSizeSecretKey:=val(cParam)
+                    case (cArgName=="-base64-")
+                        lBase64:=.F.
+                    case (cArgName=="-u").or.(cArgName=="-user")
+                        cSecretKeyPath:=strTran(cSecretKeyPath,cUserName,cParam)
+                        cUserName:=cParam
+                    otherwise
+                        ShowHelp("Unrecognized option:"+cArgName+iif(Len(cParam)>0,"="+cParam,""))
+                        break
+                endcase
             endif
-            do case
-               case (cArgName=="-s")
-                  nSizeSecretKey:=val(cParam)
-               case (cArgName=="-base64-")
-                  lBase64:=.F.
-               otherwise
-                  ShowHelp("Unrecognized option:"+cArgName+iif(Len(cParam)>0,"="+cParam,""))
-                  break
-            endcase
-         endif
         next each
 
         hb_default(@nSizeSecretKey,20)
@@ -79,7 +83,9 @@ procedure Main(...)
         else
             cSecretKey:=Generate2FAKey(nSizeSecretKey,lBase64)
             if ((!Empty(cSecretKey)).and.(hb_MemoWrit(cSecretKeyFile,cSecretKey)).and.(hb_FileExists(cSecretKeyFile)))
-                hb_Run("chmod +600 "+cSecretKeyFile)
+                #if !defined( HB_OS_WIN )
+                    hb_Run("chmod +600 "+cSecretKeyFile)
+                #endif
                 ? "Chave secreta gerada e armazenada em ",cSecretKeyFile
             else
                 ? "Problema na geração do arquivo ",cSecretKeyFile
@@ -163,8 +169,11 @@ static procedure ShowHelp(cExtraMessage as character,aArgs as array)
          ,"";
          ,"Options:";
          ,{;
-             "-h or --help       Show this help screen";
+             "-h                 Show this help screen or";
+            ,"--help             Show this help screen";
             ,"-s=<digits>        Specify the number of digits in the key code";
+            ,"-u=<user name>     Specify the user name or";
+            ,"-user=<user name>  Specify the user name";
             ,"-base64-           When this option is specified, the random key generated will not be encoded in base64 before being converted to base32";
          };
          ,"";
