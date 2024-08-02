@@ -12,7 +12,7 @@
 -lhbgt
 -lgcrypt
 
-../hb_get2FAkey.prg
+../hb_otp/hb_get2FAkey.prg
 ../otp/hb_otp/src/hb/hb_base32.prg
 
 -o/root/scripts/hb/${hb_name}

@@ -41,7 +41,7 @@
 {!cygwin}-cflag=-D_FORTIFY_SOURCE=3
 -cflag=-DHMAC_WRAPPER=openssl
 
-../hb_login.prg
+../hb_otp/hb_login.prg
 ../otp/hb_otp/src/hb/hb_otp.prg
 ../otp/hb_otp/src/hb/hb_base32.prg
 ../otp/hb_otp/src/libcotp/libcotp/src/utils/base32.c
