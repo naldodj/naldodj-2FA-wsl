@@ -1,6 +1,6 @@
 -w3 -es2
 
--compr=max
+#-compr=max
 
 -i../otp/hb_otp/src/libcotp/libcotp/src/
 -i../otp/hb_otp/src/libcotp/libcotp/src/utils/
@@ -36,6 +36,7 @@
 -cflag=-Werror=implicit-function-declaration
 -cflag=-Wno-sign-compare
 -cflag=-Wno-format-nonliteral
+-cflag=-Wno-char-subscripts
 -cflag=-U_FORTIFY_SOURCE
 {cygwin}-cflag=-D_FORTIFY_SOURCE=1
 {!cygwin}-cflag=-D_FORTIFY_SOURCE=3
